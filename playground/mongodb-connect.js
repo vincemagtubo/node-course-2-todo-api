@@ -29,9 +29,9 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
     //         return console.log('Errer has happened nigguh', err);
     //     }
 
-    //     //console.log(JSON.stringify(result.ops[0]._id.getTimestamp(), null, 2));
     //     console.log(JSON.stringify(result.ops[0]._id.getTimestamp(), null, 2));
+    //     //console.log(JSON.stringify(result.ops[0]._id.getTimestamp(), null, 2));
     // });
     
-    db.close();
+    // db.close();
 });
