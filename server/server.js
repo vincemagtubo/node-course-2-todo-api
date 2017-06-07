@@ -76,6 +76,28 @@ app.get('/todos/:todoID', (req, res) => {
 });
 
 
+app.delete('/todos/:todoIDrmv', (req, res) => {
+    var todoIDrmv = req.params.todoIDrmv;
+
+    if (!ObjectId.isValid(todoIDrmv)) {
+        console.log('Faking shit happend');
+        return res.status(404).send();
+    }
+
+    Todo.findByIdAndRemove(todoIDrmv).then((_todoIDrmv) => {
+        if (!_todoIDrmv) {
+            res.status(404).send();
+            console.log('Haha wala e sorry');
+        } else {
+            res.status(200).send({_todoIDrmv});
+            console.log(`Todo ID removed: ${_todoIDrmv}`);
+            console.log();
+        }
+    }).catch((err) => {
+        res.status(400).send();
+    });
+});
+
 // app.listen(3000, () => {
 //     console.log('Started on port 3000');
 // });
