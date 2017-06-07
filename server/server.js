@@ -1,7 +1,8 @@
 //start program
-var express = require('express');
-var bodyParser = require('body-parser');
-var {ObjectId} = require('mongodb');
+const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser');
+const {ObjectId} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js');
@@ -97,6 +98,45 @@ app.delete('/todos/:todoIDrmv', (req, res) => {
         res.status(400).send();
     });
 });
+
+
+app.patch('/todos/:todoIDupd', (req, res) => {
+    var todoIDupd = req.params.todoIDupd;
+
+    //subsets of the things user wants to pass
+    var body = _.pick(req.body, ['text', 'completed']);
+    
+    if (!ObjectId.isValid(todoIDupd)) {
+        console.log('damn shit niggut hapend');
+        return res.status(404).send();
+    }
+
+    //update through completed property
+    if(_.isBoolean(body.completed) && body.completed) {
+        body.completedAt = new Date().getTime();
+    } else {
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(todoIDupd, {
+        $set: body
+    }, {
+        new: true
+    }).then((_todoIDupd) => {
+        if (!_todoIDupd) {
+            console.log('Fak empthy');
+            return res.status(404).send();
+        } else {
+            console.log(`Todo updated: ${_todoIDupd}`);
+            console.log();
+            res.status(200).send({_todoIDupd});
+        }
+    }).catch((err) => {
+        res.status(400).send();
+    });
+});
+
 
 // app.listen(3000, () => {
 //     console.log('Started on port 3000');
