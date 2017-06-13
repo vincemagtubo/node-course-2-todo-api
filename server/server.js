@@ -162,7 +162,7 @@ app.get('/users/me', authenticate, (req, res) => {
 /* 
     *****////USERS******
 
-//secret = _
+//salt = _
 app.listen(port, () => {
     console.log(`Started on port ${port}`);
 });
