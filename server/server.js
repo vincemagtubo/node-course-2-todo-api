@@ -9,12 +9,17 @@ const {ObjectId} = require('mongodb');
 var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js');
 var {User} = require('./models/user.js');
+var {authenticate} = require('./middleware/authenticate.js');
 
 var app = express();
 
 const port = process.env.PORT;
 
 app.use(bodyParser.json());
+
+/* 
+    *****POSTS******
+*/
 
 app.post('/todos', (req, res) => {
     var todo = new Todo({
@@ -28,19 +33,6 @@ app.post('/todos', (req, res) => {
     });    
 });
 
-app.post('/users', (req, res) => {
-    var body = _.pick(req.body, ['email', 'password'])
-    var user = new User(body);
-
-    user.save().then(() => {
-        return user.generateAuthToken();
-    }).then((token) => {
-        res.header('x-auth', token).send(user);
-    }).catch((e) => {
-        res.status(400).send(e);
-    });
-});
-
 app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
         res.send({todos});
@@ -48,15 +40,6 @@ app.get('/todos', (req, res) => {
         res.status(400).send(err);
     });
 });
-
-app.get('/users', (req, res) => {
-    User.find().then((users) => {
-        res.send({users});
-    }, (err) => {
-        res.status(400).send(err);
-    });
-});
-
 
 app.get('/todos/:todoID', (req, res) => {
     var todoID = req.params.todoID;
@@ -140,11 +123,46 @@ app.patch('/todos/:todoIDupd', (req, res) => {
     });
 });
 
+/* 
+    *****////POSTS******
 
-// app.listen(3000, () => {
-//     console.log('Started on port 3000');
-// });
+/* 
+    *****USERS******
+*/
 
+
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password'])
+    var user = new User(body);
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
+});
+
+
+app.get('/users', (req, res) => {
+    User.find().then((users) => {
+        res.send({users});
+    }, (err) => {
+        res.status(400).send(err);
+    });
+});
+
+//private
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
+});
+
+
+/* 
+    *****////USERS******
+
+//secret = _
 app.listen(port, () => {
     console.log(`Started on port ${port}`);
 });

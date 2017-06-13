@@ -40,7 +40,7 @@ UserSchema.methods.toJSON = function () {
 };
 
 UserSchema.methods.generateAuthToken = function () {
-    var user = this;
+    var user = this; //instance call
     var access = 'auth';
     var token = jwt.sign({_id: user._id.toHexString(), access: access}, '_').toString();
 
@@ -52,6 +52,27 @@ UserSchema.methods.generateAuthToken = function () {
     return user.save().then(() => {
         return token;
     });
+};
+
+UserSchema.statics.findByToken = function (token) {
+    var User = this; //model call
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, '_')
+    } catch (err) {
+        // return new Promise((resolve, reject) => {
+        //     reject();
+        // });
+        return Promise.reject('Rejected');
+    }
+
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+
 };
 
 
