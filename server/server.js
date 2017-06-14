@@ -132,7 +132,7 @@ app.patch('/todos/:todoIDupd', (req, res) => {
 
 
 app.post('/users', (req, res) => {
-    var body = _.pick(req.body, ['email', 'password'])
+    var body = _.pick(req.body, ['email', 'password']);
     var user = new User(body);
 
     user.save().then(() => {
@@ -156,6 +156,18 @@ app.get('/users', (req, res) => {
 //private
 app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);
+});
+
+app.post('/users/login', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+
+    User.findByCredentials(body.email, body.password).then((userLogin) => {
+        return userLogin.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(userLogin);
+        });
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
 });
 
 
