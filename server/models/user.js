@@ -75,9 +75,9 @@ UserSchema.statics.findByToken = function (token) {
     });
 };
 
+//hash pw before saving.
 UserSchema.pre('save', function (next) {
     var user = this;
-
 
     if (user.isModified('password')) {
         bcrypt.genSalt(10, (err, salt) => {
