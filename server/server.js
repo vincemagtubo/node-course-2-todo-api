@@ -158,12 +158,14 @@ app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);
 });
 
+
+//for reusable
 app.post('/users/login', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
 
     User.findByCredentials(body.email, body.password).then((userLogin) => {
-        return userLogin.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send(userLogin);
+        return userLogin.generateAuthToken().then((tokenLogin) => {
+            res.header('x-auth', tokenLogin).send(userLogin);
         });
     }).catch((err) => {
         res.status(400).send(err);
