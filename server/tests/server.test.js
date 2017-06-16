@@ -207,7 +207,16 @@ describe('PATCH /todos/:todoIDupd', () => {
                 completed: true
             })
             .expect(404)
-            .end(done);
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                } else {
+                    Todo.findById(hexID).then((_testupd) => {
+                        expect(_testupd).toExist();
+                        done();
+                    }).catch((e) => done(e));
+                }
+            });
     });
 
     it('shoulda clear completedAt when todo aint completed', (done) => {
