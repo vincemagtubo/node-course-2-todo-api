@@ -21,9 +21,10 @@ app.use(bodyParser.json());
     *****POSTS******
 */
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
     var todo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _createdBy: req.user._id
     });
 
     todo.save().then((doc) => {
@@ -33,15 +34,17 @@ app.post('/todos', (req, res) => {
     });    
 });
 
-app.get('/todos', (req, res) => {
-    Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+    Todo.find({
+        _createdBy: req.user._id
+    }).then((todos) => {
         res.send({todos});
     }, (err) => {
         res.status(400).send(err);
     });
 });
 
-app.get('/todos/:todoID', (req, res) => {
+app.get('/todos/:todoID', authenticate, (req, res) => {
     var todoID = req.params.todoID;
 
     if (!ObjectId.isValid(todoID)) {
@@ -49,7 +52,10 @@ app.get('/todos/:todoID', (req, res) => {
         return res.status(404).send();
     }
 
-    Todo.findById(todoID).then((_todoID) => {
+    Todo.findOne({
+        _id: todoID,
+        _createdBy: req.user._id
+    }).then((_todoID) => {
         if (!_todoID) {
             res.status(404).send();
         } else {
@@ -63,7 +69,7 @@ app.get('/todos/:todoID', (req, res) => {
 });
 
 
-app.delete('/todos/:todoIDrmv', (req, res) => {
+app.delete('/todos/:todoIDrmv', authenticate, (req, res) => {
     var todoIDrmv = req.params.todoIDrmv;
 
     if (!ObjectId.isValid(todoIDrmv)) {
@@ -71,7 +77,10 @@ app.delete('/todos/:todoIDrmv', (req, res) => {
         return res.status(404).send();
     }
 
-    Todo.findByIdAndRemove(todoIDrmv).then((_todoIDrmv) => {
+    Todo.findOneAndRemove({
+        _id: todoIDrmv,
+        _createdBy: req.user._id
+    }).then((_todoIDrmv) => {
         if (!_todoIDrmv) {
             res.status(404).send();
             console.log('Haha wala e sorry');
@@ -86,7 +95,7 @@ app.delete('/todos/:todoIDrmv', (req, res) => {
 });
 
 
-app.patch('/todos/:todoIDupd', (req, res) => {
+app.patch('/todos/:todoIDupd', authenticate, (req, res) => {
     var todoIDupd = req.params.todoIDupd;
 
     //subsets of the things user wants to pass
@@ -105,7 +114,14 @@ app.patch('/todos/:todoIDupd', (req, res) => {
         body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(todoIDupd, {
+    // Todo.findByIdAndUpdate(todoIDupd, {
+    //     $set: body
+    // }
+
+    Todo.findOneAndUpdate({
+        _id: todoIDupd,
+        _createdBy: req.user._id
+    }, {
         $set: body
     }, {
         new: true
